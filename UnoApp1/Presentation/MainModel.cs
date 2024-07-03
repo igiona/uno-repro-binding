@@ -19,10 +19,17 @@ public partial record MainModel
 
     public IState<string> Name => State<string>.Value(this, () => string.Empty);
 
+    public IState<PowerManagementModel> PowerManagement => State<PowerManagementModel>.Value(this, () => PowerManagementModel.Empty);
+
     public async Task GoToSecond()
     {
         var name = await Name;
-        await _navigator.NavigateViewModelAsync<SecondModel>(this, data: new Entity(name!));
+        //await _navigator.NavigateViewModelAsync<SecondModel>(this, data: new Entity(name!));
+        await PowerManagement.UpdateAsync(pm =>
+            (pm ?? PowerManagementModel.Empty) with
+            {
+                BatteryStateOfCharge = Random.Shared.Next(0, 100),
+                ChargingState = (BatteryChargingState)Random.Shared.Next(0, Enum.GetValues<BatteryChargingState>().Length)
+            }, CancellationToken.None);
     }
-
 }
